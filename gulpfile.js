@@ -2,6 +2,7 @@
 
 var gulp = require("gulp");
 var del = require("del");
+var rename = require("gulp-rename");
 var webpack = require("webpack");
 var WebpackDevServer = require("webpack-dev-server");
 var assign = require("object-assign");
@@ -9,7 +10,7 @@ var opn = require("opn");
 
 var UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
-const DEV_PORT = 8080;
+const DEV_PORT = process.env.DEV_PORT || 8080;
 
 gulp.task("clean", function() {
   return del(["./build/*"]);
@@ -27,6 +28,14 @@ gulp.task("copy", function() {
   return gulp
     .src("./node_modules/slick-carousel/slick/ajax-loader.gif")
     .pipe(gulp.dest("./build"));
+});
+
+gulp.task("prepare-playwright", function() {
+  // Copy files to src-jsx directory with jsx extension
+  return gulp
+    .src("./src/**/*.js")
+    .pipe(rename({ extname: ".jsx" }))
+    .pipe(gulp.dest("./src-jsx"));
 });
 
 gulp.task(

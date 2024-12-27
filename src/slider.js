@@ -4,8 +4,7 @@ import React from "react";
 import { InnerSlider } from "./inner-slider";
 import json2mq from "json2mq";
 import defaultProps from "./default-props";
-import { canUseDOM } from "./utils/innerSliderUtils";
-const enquire = canUseDOM() && require("enquire.js");
+import { canUseDOM, filterSettings } from "./utils/innerSliderUtils";
 
 export default class Slider extends React.Component {
   constructor(props) {
@@ -20,8 +19,14 @@ export default class Slider extends React.Component {
 
   media(query, handler) {
     // javascript handler for  css media query
-    enquire.register(query, handler);
-    this._responsiveMediaHandlers.push({ query, handler });
+    const mql = window.matchMedia(query);
+    const listener = ({ matches }) => {
+      if (matches) {
+        handler();
+      }
+    };
+    mql.addListener(listener);
+    this._responsiveMediaHandlers.push({ mql, query, listener });
   }
 
   // handles responsive breakpoints
@@ -69,7 +74,7 @@ export default class Slider extends React.Component {
 
   componentWillUnmount() {
     this._responsiveMediaHandlers.forEach(function(obj) {
-      enquire.unregister(obj.query, obj.handler);
+      obj.mql.removeListener(obj.listener);
     });
   }
 
@@ -205,7 +210,7 @@ export default class Slider extends React.Component {
       <InnerSlider
         style={this.props.style}
         ref={this.innerSliderRefHandler}
-        {...settings}
+        {...filterSettings(settings)}
       >
         {newChildren}
       </InnerSlider>
